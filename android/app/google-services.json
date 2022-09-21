@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "985720559694",
+    "project_id": "andrea-2-492b8",
+    "storage_bucket": "andrea-2-492b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985720559694:android:1c36b5062497fc272acb1f",
+        "android_client_info": {
+          "package_name": "com.example.time_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "985720559694-ftidif7uku234q98kr1ouvtm3u9ccbcf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.time_tracker",
+            "certificate_hash": "821309cb72c7cbbd23953930be5db62a5d1cf304"
+          }
+        },
+        {
+          "client_id": "985720559694-ck5sckjam1kvlqkg028aqujkdvhurudm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQmGuvsBJ3iNmYUegH2QGewSHzLLXypKI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "985720559694-ck5sckjam1kvlqkg028aqujkdvhurudm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "985720559694-lknqcciuen7q7q1mko5qacfup8retjbn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.timeTracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

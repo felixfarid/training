@@ -1,17 +1,27 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../services/auth.dart';
 import './sign_in_button.dart';
 import 'social_sign_in_button.dart';
 
 class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
+  const SignInPage({
+    super.key,
+    required this.auth,
+  });
+  //// final void Function(User) onSignIn;
+  final AuthBase auth;
 
+  // we will use Dependency injection - we will inject Auth class
   Future<void> _signInAnonymously() async {
     try {
-      final userCredentials = await FirebaseAuth.instance.signInAnonymously();
       // it returns Future type - UserCredential
       // since this method returns future - use await
-      print('${userCredentials.user?.uid}');
+      //// final userCredentials = await FirebaseAuth.instance.signInAnonymously();
+      //// final user = await auth.signInAnonymously(); // no need assign it
+      await auth.signInAnonymously();
+
+      //// onSignIn(userCredentials.user!);
+      //// onSignIn(user!); // no need for this anymore
     } catch (e) {
       print(e.toString());
     }
@@ -59,7 +69,9 @@ class SignInPage extends StatelessWidget {
             color: Colors.white,
             textColor: Colors.black87,
             borderRadius: 16,
-            onPressed: () {},
+            onPressed: () {
+              print('Google');
+            },
           ),
           const SizedBox(height: 10),
           SocialSignInButton(

@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'app/sign_in/sign_in_page.dart';
+import 'package:time_tracker/services/auth.dart';
+import 'app/landing_page.dart';
 
+// void main() {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -30,7 +32,8 @@ class MyApp extends StatelessWidget {
       // Whenever you ask yourself where a certain color or
       // textile comes from - it’s from ThemeData
       theme: ThemeData(primarySwatch: Colors.indigo),
-      home: SignInPage(),
+      // AuthBase is an abstract class we cannot pass it
+      home: LandingPage(auth: Auth()),
     );
   }
 }
