@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:time_tracker/app/sign_in/email_sign_in_page.dart';
 import '../../services/auth.dart';
 import './sign_in_button.dart';
 import 'social_sign_in_button.dart';
@@ -27,6 +28,27 @@ class SignInPage extends StatelessWidget {
     }
   }
 
+  // [162]
+  Future<void> _signInWithGoogle() async {
+    try {
+      await auth.signInWithGoogle();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  // [181]
+  void _signInWithEmail(BuildContext context) {
+    // [182]
+    //
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (context) => EmailSignInPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,7 +56,7 @@ class SignInPage extends StatelessWidget {
         title: const Text('Time Tracker'),
         elevation: 2,
       ),
-      body: _buildContent(),
+      body: _buildContent(context),
       backgroundColor: Colors.grey[100],
     );
   }
@@ -45,7 +67,7 @@ class SignInPage extends StatelessWidget {
   // when another dev looks at your code, they will
   // understand that which variable is public
   // which is ment to private
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     return Padding(
       // color: Colors.amber,
       padding: const EdgeInsets.all(16),
@@ -69,9 +91,7 @@ class SignInPage extends StatelessWidget {
             color: Colors.white,
             textColor: Colors.black87,
             borderRadius: 16,
-            onPressed: () {
-              print('Google');
-            },
+            onPressed: _signInWithGoogle, //[162]
           ),
           const SizedBox(height: 10),
           SocialSignInButton(
@@ -85,7 +105,7 @@ class SignInPage extends StatelessWidget {
           SignInButton(
             text: 'Email',
             color: const Color.fromARGB(255, 50, 121, 52),
-            onPressed: () {},
+            onPressed: () => _signInWithEmail(context),
             borderRadius: 16,
           ),
           const SizedBox(height: 10),
