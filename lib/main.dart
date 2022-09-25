@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:time_tracker/services/auth.dart';
 import 'app/landing_page.dart';
 
@@ -25,15 +26,21 @@ class MyApp extends StatelessWidget {
   // overriding a method on the superclass (parent - stateless)
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Time Tracker',
-      // Some wages will inherit some of their visual
-      // properties from theme data.
-      // Whenever you ask yourself where a certain color or
-      // textile comes from - it’s from ThemeData
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      // AuthBase is an abstract class we cannot pass it
-      home: LandingPage(auth: Auth()),
+    return Provider<AuthBase>(
+      // [214 - 217]
+      create: (context) => Auth(),
+      child: MaterialApp(
+        title: 'Time Tracker',
+        // Some wages will inherit some of their visual
+        // properties from theme data.
+        // Whenever you ask yourself where a certain color or
+        // textile comes from - it’s from ThemeData
+        theme: ThemeData(primarySwatch: Colors.indigo),
+        // AuthBase is an abstract class we cannot pass it
+        // [215]
+        //// home: LandingPage(auth: Auth()),
+        home: LandingPage(),
+      ),
     );
   }
 }

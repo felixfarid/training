@@ -15,6 +15,11 @@ abstract class AuthBase {
   Future<void> signOut();
   Stream<User?> authStateChanges();
   Future<User?> signInWithGoogle(); // [161]
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password); //[189]
+  Future<User?> createUserWithEmailAndPassword(
+      String email, String password); //[189]
+
 }
 
 // if using - implements
@@ -60,6 +65,28 @@ class Auth implements AuthBase {
         message: 'Sign in aborted by user',
       );
     }
+  }
+
+  // [189]
+  @override
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
+    final userCredentials = await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return userCredentials.user;
+  }
+
+  //[189]
+  @override
+  Future<User?> createUserWithEmailAndPassword(
+      String email, String password) async {
+    final userCredentials = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return userCredentials.user;
   }
 
   @override
