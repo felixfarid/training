@@ -2,24 +2,41 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker/app/sign_in/email_sign_in_page.dart';
+import 'package:time_tracker/app/sign_in/sign_in_bloc.dart';
 import 'package:time_tracker/common_widgets/show_exception_alert_dialog.dart';
 import '../../services/auth.dart';
 import './sign_in_button.dart';
 import 'social_sign_in_button.dart';
 
-class SignInPage extends StatefulWidget {
-  const SignInPage({super.key});
+class SignInPage extends StatelessWidget {
+  const SignInPage({super.key, required this.bloc});
+  final SignInBloc bloc;
 
-  @override
-  State<SignInPage> createState() => _SignInPageState();
-}
+  // why static -> SignInBloc is useful when we use it together
+  // with the SignInPage.
+  // Use a static create(context)
+  //
+  // Since SignInBloc is parent of SignInPage - we can access
+  // bloc from SignInPage.
+  static Widget create(BuildContext context) {
+    final auth = Provider.of<AuthBase>(context, listen: false); // [239]
+    return Provider<SignInBloc>(
+      // use "_" for arguments that are not needed
+      create: (_) => SignInBloc(auth: auth),
+      // use consumer here from Provider package.
+      // Consumer(builder: (context, value, child))
+      // [236]
+      child: Consumer<SignInBloc>(
+        builder: ((_, bloc, __) => SignInPage(bloc: bloc)),
+      ),
+      // [237] - dispose the bloc when it's removed from widget tree
+      dispose: (_, bloc) => bloc.dispose(),
+    );
+  }
 
-class _SignInPageState extends State<SignInPage> {
-  //// final void Function(User) onSignIn;
-  //// final AuthBase auth;
-
-  // [228]
-  bool _isLoading = false;
+  // [235] - removed local _isLoading.
+  // now it comes from  Bloc snapshot.data
+  //// bool _isLoading = false;
 
   //----------------------------------------------------------------------------
   // Sign In methods
@@ -27,22 +44,19 @@ class _SignInPageState extends State<SignInPage> {
 
   // [162]
   Future<void> _signInWithGoogle(BuildContext context) async {
-    _showLoading();
+    // [235]
     try {
-      //// final auth = AuthProvider.of(context); //[215]
-      final auth = Provider.of<AuthBase>(context, listen: false); //[217]
-      await auth.signInWithGoogle();
+      // [239] - we can delete _setIsLoading since
+      // bloc handles it internally now
+      // as well no need to have auth instance here anymore.
+      await bloc.signInWithGoogle();
     } on Exception catch (e) {
       _showSignInError(context, e);
-      // [223]
-      _showLoading();
     }
   }
 
   // [181]
   void _signInWithEmail(BuildContext context) {
-    // _showLoading();
-    //// final auth = AuthProvider.of(context); //[215]
     // [182]
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -50,27 +64,17 @@ class _SignInPageState extends State<SignInPage> {
         builder: (context) => const EmailSignInPage(), //[189]
       ),
     );
-    // _showLoading();
   }
 
   // we will use Dependency injection - we will inject Auth class
   Future<void> _signInAnonymously(BuildContext context) async {
-    _showLoading();
     try {
-      //// final auth = AuthProvider.of(context); //[215]
-      final auth = Provider.of<AuthBase>(context, listen: false); //[217]
       // it returns Future type - UserCredential
       // since this method returns future - use await
-      //// final userCredentials = await FirebaseAuth.instance.signInAnonymously();
-      //// final user = await auth.signInAnonymously(); // no need assign it
-      await auth.signInAnonymously();
-
-      //// onSignIn(userCredentials.user!);
-      //// onSignIn(user!); // no need for this anymore
+      // [239]
+      await bloc.signInAnonymously();
     } on Exception catch (e) {
       _showSignInError(context, e);
-      // [223]
-      _showLoading();
     }
   }
 
@@ -94,12 +98,14 @@ class _SignInPageState extends State<SignInPage> {
   // Loading
   //----------------------------------------------------------------------------
 
-  void _showLoading() {
-    setState(() => _isLoading = !_isLoading);
-  }
+  // [235] - _showLoading - depreceated
+  // using bloc in sign in methods
+  //// void _showLoading() {
+  //   // setState(() => _isLoading = !_isLoading);
+  //// }
 
-  Widget _buildHeader() {
-    if (_isLoading) {
+  Widget _buildHeader(bool isLoading) {
+    if (isLoading) {
       return const SizedBox(
         height: 50,
         width: 50,
@@ -124,7 +130,11 @@ class _SignInPageState extends State<SignInPage> {
   //----------------------------------------------------------------------------
   // Contents
   //----------------------------------------------------------------------------
-  Widget _buildContent(BuildContext context) {
+  // [233] - adding new bool argument. Extracted from snapshot.data
+  Widget _buildContent(
+    BuildContext context,
+    bool? isLoading,
+  ) {
     return Padding(
       // color: Colors.amber,
       padding: const EdgeInsets.all(16),
@@ -133,7 +143,7 @@ class _SignInPageState extends State<SignInPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         // ignore: prefer_const_literals_to_create_immutables
         children: [
-          _buildHeader(),
+          _buildHeader(isLoading!),
           const SizedBox(height: 30),
           SocialSignInButton(
             text: 'Google',
@@ -142,13 +152,13 @@ class _SignInPageState extends State<SignInPage> {
             textColor: Colors.black87,
             borderRadius: 16,
             onPressed:
-                !_isLoading ? () => _signInWithGoogle(context) : null, //[162]
+                !isLoading! ? () => _signInWithGoogle(context) : null, //[162]
           ),
           const SizedBox(height: 10),
           SignInButton(
             text: 'Email',
             color: const Color.fromARGB(255, 50, 121, 52),
-            onPressed: !_isLoading ? () => _signInWithEmail(context) : null,
+            onPressed: !isLoading ? () => _signInWithEmail(context) : null,
             borderRadius: 16,
           ),
           const SizedBox(height: 10),
@@ -169,7 +179,7 @@ class _SignInPageState extends State<SignInPage> {
             // if with () it's method invocation.
             // because this is a callback that takes no arg.
             // and signInA. takes no arguments, we can pass as it is
-            onPressed: !_isLoading ? () => _signInAnonymously(context) : null,
+            onPressed: !isLoading ? () => _signInAnonymously(context) : null,
             borderRadius: 16,
           ),
         ],
@@ -182,12 +192,31 @@ class _SignInPageState extends State<SignInPage> {
   //----------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    // [234]
+    // no need to wrap entire Scaffold with StreamBuilder
+    // as AppBar does not change
     return Scaffold(
       appBar: AppBar(
         title: const Text('Time Tracker'),
         elevation: 2,
       ),
-      body: _buildContent(context),
+      body: StreamBuilder<bool>(
+          stream: bloc.isLoadingStream,
+          // since we are providing initial data (false)
+          // no need to check for initial connectionState
+          //
+          // additionally, SignInBloC does not add any errors to the stream
+          // no need to check for them.
+          initialData: false,
+          builder: (context, snapshot) {
+            // [233]
+            // extract loadingState from snapshot
+            // add new bool paremeter to _buildContent
+            return _buildContent(
+              context,
+              snapshot.data,
+            );
+          }),
       backgroundColor: Colors.grey[100],
     );
   }

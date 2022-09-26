@@ -5,22 +5,20 @@ import 'package:time_tracker/app/sign_in/validators.dart';
 import 'package:time_tracker/services/auth.dart';
 
 import '../../common_widgets/form_submit_button.dart';
-import '../../common_widgets/show_alert_dialog.dart';
 import '../../common_widgets/show_exception_alert_dialog.dart';
-
-enum EmailSignInFormType { signIn, register }
+import 'email_sign_in_model.dart';
 
 //[196] - added mixin
-class EmailSignInForm extends StatefulWidget with EmailAndPasswordValidators {
-  EmailSignInForm({super.key});
-
-  //// final AuthBase auth; //[189]
+class EmailSignInFormStateful extends StatefulWidget
+    with EmailAndPasswordValidators {
+  EmailSignInFormStateful({super.key});
 
   @override
-  State<EmailSignInForm> createState() => _EmailSignInFormState();
+  State<EmailSignInFormStateful> createState() =>
+      _EmailSignInFormStatefulState();
 }
 
-class _EmailSignInFormState extends State<EmailSignInForm> {
+class _EmailSignInFormStatefulState extends State<EmailSignInFormStateful> {
   // depending on the formType we will customize the text that
   // we show inside our button
   EmailSignInFormType _formType = EmailSignInFormType.signIn; //[188]
@@ -55,7 +53,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   //----------------------------------------------------------------------------
   // Methods for buttons
   //----------------------------------------------------------------------------
-  void _submit() async {
+  Future<void> _submit() async {
     //[198]
     setState(() {
       _submitted = true;
@@ -64,7 +62,6 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     });
     //[190]
     try {
-      //// final auth = AuthProvider.of(context); //[215]
       final auth = Provider.of<AuthBase>(context, listen: false); //[217]
       if (_formType == EmailSignInFormType.signIn) {
         await auth.signInWithEmailAndPassword(_email, _password);
