@@ -19,7 +19,6 @@ abstract class AuthBase {
       String email, String password); //[189]
   Future<User?> createUserWithEmailAndPassword(
       String email, String password); //[189]
-
 }
 
 // if using - implements
@@ -66,6 +65,8 @@ class Auth implements AuthBase {
       );
     }
   }
+
+  //! problem could be in signInWithEmailAndPassword
 
   // [189]
   @override

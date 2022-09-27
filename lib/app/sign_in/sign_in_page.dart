@@ -100,9 +100,6 @@ class SignInPage extends StatelessWidget {
 
   // [235] - _showLoading - depreceated
   // using bloc in sign in methods
-  //// void _showLoading() {
-  //   // setState(() => _isLoading = !_isLoading);
-  //// }
 
   Widget _buildHeader(bool isLoading) {
     if (isLoading) {
@@ -152,7 +149,7 @@ class SignInPage extends StatelessWidget {
             textColor: Colors.black87,
             borderRadius: 16,
             onPressed:
-                !isLoading! ? () => _signInWithGoogle(context) : null, //[162]
+                !isLoading ? () => _signInWithGoogle(context) : null, //[162]
           ),
           const SizedBox(height: 10),
           SignInButton(

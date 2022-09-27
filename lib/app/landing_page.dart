@@ -19,7 +19,7 @@ class LandingPage extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: auth.authStateChanges(),
       // SNAPSHOT - holds the data from our stream
-      builder: ((context, snapshot) {
+      builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.active) {
           final User? user = snapshot.data;
           if (user == null) {
@@ -33,56 +33,7 @@ class LandingPage extends StatelessWidget {
             child: CircularProgressIndicator(),
           ),
         );
-      }),
+      },
     );
   }
-
-  //// @override
-  //// State<LandingPage> createState() => _LandingPageState();
-//// }
-
-//// class _LandingPageState extends State<LandingPage> {
-  // THE FOLLOWING CODE WAS REPLACED BY STREAMBUILDER
-  // [156]
-
-  //// User? _user; // no need to use anymore [156]
-
-  //// to update the _user when application starts
-
-  //// @override
-  //// void initState() {
-  ////     super.initState();
-
-  //// FirebaseAuth.instance.currentUser;
-  //// _updateUser(FirebaseAuth.instance.currentUser);
-
-  ////   // Listen to the stream [153]
-  ////   widget.auth.authStateChanges().listen((user) {
-  ////     print('uid: ${user?.uid}');
-  ////   });
-
-  ////   // to access auth in statefull widget - type widget.auth
-  ////   _updateUser(widget.auth.currentUser);
-  ////  }
-
-  //// void _updateUser(User? user) {
-  ////   // print('User id: ${user!.uid}');
-  ////   setState(() {
-  ////     _user = user;
-  ////   });
-  //// }
-
-  // removing code below
-  // will use StreamBuilder instead
-  //// if (_user == null) {
-  ////   return SignInPage(
-  ////     // onSignIn: (user) => _updateUser(user),
-  ////     onSignIn: _updateUser,
-  ////     auth: widget.auth,
-  ////   );
-  //// }
-  //// return HomePage(
-  ////   onSignOut: () => _updateUser(null),
-  ////   auth: widget.auth,
-  //// );
 }

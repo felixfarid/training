@@ -9,15 +9,10 @@ class HomePage extends StatelessWidget {
     super.key,
   });
 
-  //// final VoidCallback onSignOut;
-
   Future<void> _signOut(BuildContext context) async {
     try {
-      // final auth = AuthProvider.of(context); //[215]
       final auth = Provider.of<AuthBase>(context, listen: false); //[217]
-      //// await FirebaseAuth.instance.signOut();
       await auth.signOut(); // new
-      //// onSignOut(); no need
     } catch (e) {
       print(e.toString());
       print('Could not sign out');
