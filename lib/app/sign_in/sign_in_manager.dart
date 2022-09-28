@@ -1,27 +1,22 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '../../services/auth.dart';
 
+// * [259] - since this file doesn't use Stream anymore
+// * [259] - we cannot call is bloc
+// * [259] - instead change name to SignInManager
+
 // [232]
-class SignInBloc {
+class SignInManager {
   // [238] - moving authentication to bloc
-  SignInBloc({required this.auth});
+  SignInManager({required this.auth, required this.isLoading});
   final AuthBase auth;
 
-  // _isLoadingController is private variable
-  // this is intentional as the sign in page will have access
-  // to isLoadingStream but not to the controller
-  final StreamController<bool> _isLoadingController = StreamController<bool>();
+  final ValueNotifier<bool> isLoading; // [257]
 
-  // this will be input stream that we will add to our page
-  Stream<bool> get isLoadingStream => _isLoadingController.stream;
-
-  void dispose() {
-    _isLoadingController.close();
-  }
-
-  // this is the same as adding sink to the controller
-  void _setIsLoading(bool isLoading) => _isLoadingController.add(isLoading);
+  // [257]
+  // ValueNotifier will be used instead of StreamController.
 
   // [238] - move authentication logic in here
   // create a method which will take a function as an argument
@@ -29,10 +24,10 @@ class SignInBloc {
   // we are passing Function() which returns future as an argument
   Future<User?> _signIn(Future<User?> Function() signInMethod) async {
     try {
-      _setIsLoading(true);
+      isLoading.value = true; // [257]
       return await signInMethod();
     } catch (e) {
-      _setIsLoading(false);
+      isLoading.value = false; // [257]
       rethrow;
     }
   }

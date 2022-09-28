@@ -2,15 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker/app/sign_in/email_sign_in_page.dart';
-import 'package:time_tracker/app/sign_in/sign_in_bloc.dart';
+import 'package:time_tracker/app/sign_in/sign_in_manager.dart';
 import 'package:time_tracker/common_widgets/show_exception_alert_dialog.dart';
 import '../../services/auth.dart';
 import './sign_in_button.dart';
 import 'social_sign_in_button.dart';
 
 class SignInPage extends StatelessWidget {
-  const SignInPage({super.key, required this.bloc});
-  final SignInBloc bloc;
+  const SignInPage({super.key, required this.manager, required this.isLoading});
+  // * [259] - renaming bloc -> manager
+  final SignInManager manager;
+  final bool isLoading;
+
+  // * [258] - we can pass isLoading directly to SignInPage
 
   // why static -> SignInBloc is useful when we use it together
   // with the SignInPage.
@@ -18,19 +22,37 @@ class SignInPage extends StatelessWidget {
   //
   // Since SignInBloc is parent of SignInPage - we can access
   // bloc from SignInPage.
+
+  // **** Changes
+  // *[257] - ValueNotifier will be used instead of StreamController
+  // * dispose - deleted
+  // * Wrap Provider<SignInBloc> with ChangeNotifierProvider
+  // * to pass [isLoading] value to children
   static Widget create(BuildContext context) {
     final auth = Provider.of<AuthBase>(context, listen: false); // [239]
-    return Provider<SignInBloc>(
-      // use "_" for arguments that are not needed
-      create: (_) => SignInBloc(auth: auth),
-      // use consumer here from Provider package.
-      // Consumer(builder: (context, value, child))
-      // [236]
-      child: Consumer<SignInBloc>(
-        builder: ((_, bloc, __) => SignInPage(bloc: bloc)),
+    return ChangeNotifierProvider<ValueNotifier<bool>>(
+      // [257] - passing initial value of false
+      create: (_) => ValueNotifier<bool>(false),
+      // [257] - wrap with Consumer in order to get access to [isLoading]
+      child: Consumer<ValueNotifier<bool>>(
+        builder: (_, isLoading, __) => Provider<SignInManager>(
+          // use "_" for arguments that are not needed
+          create: (_) => SignInManager(
+            auth: auth,
+            isLoading: isLoading,
+          ),
+          // use consumer here from Provider package.
+          // Consumer(builder: (context, value, child))
+          // [236]
+          child: Consumer<SignInManager>(
+            // * [259] - renaming bloc -> manager
+            builder: ((_, manager, __) => SignInPage(
+                  manager: manager,
+                  isLoading: isLoading.value,
+                )),
+          ),
+        ),
       ),
-      // [237] - dispose the bloc when it's removed from widget tree
-      dispose: (_, bloc) => bloc.dispose(),
     );
   }
 
@@ -49,7 +71,7 @@ class SignInPage extends StatelessWidget {
       // [239] - we can delete _setIsLoading since
       // bloc handles it internally now
       // as well no need to have auth instance here anymore.
-      await bloc.signInWithGoogle();
+      await manager.signInWithGoogle();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
@@ -72,7 +94,7 @@ class SignInPage extends StatelessWidget {
       // it returns Future type - UserCredential
       // since this method returns future - use await
       // [239]
-      await bloc.signInAnonymously();
+      await manager.signInAnonymously();
     } on Exception catch (e) {
       _showSignInError(context, e);
     }
@@ -101,7 +123,7 @@ class SignInPage extends StatelessWidget {
   // [235] - _showLoading - depreceated
   // using bloc in sign in methods
 
-  Widget _buildHeader(bool isLoading) {
+  Widget _buildHeader() {
     if (isLoading) {
       return const SizedBox(
         height: 50,
@@ -128,10 +150,7 @@ class SignInPage extends StatelessWidget {
   // Contents
   //----------------------------------------------------------------------------
   // [233] - adding new bool argument. Extracted from snapshot.data
-  Widget _buildContent(
-    BuildContext context,
-    bool? isLoading,
-  ) {
+  Widget _buildContent(BuildContext context) {
     return Padding(
       // color: Colors.amber,
       padding: const EdgeInsets.all(16),
@@ -140,7 +159,7 @@ class SignInPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         // ignore: prefer_const_literals_to_create_immutables
         children: [
-          _buildHeader(isLoading!),
+          _buildHeader(),
           const SizedBox(height: 30),
           SocialSignInButton(
             text: 'Google',
@@ -189,6 +208,10 @@ class SignInPage extends StatelessWidget {
   //----------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    // * [257] - accessing isLoading from parent ValueNotifier
+    // * [258] - now passing isLoading directly to SignInPage
+    // * no need to pass it to the methods
+
     // [234]
     // no need to wrap entire Scaffold with StreamBuilder
     // as AppBar does not change
@@ -197,23 +220,9 @@ class SignInPage extends StatelessWidget {
         title: const Text('Time Tracker'),
         elevation: 2,
       ),
-      body: StreamBuilder<bool>(
-          stream: bloc.isLoadingStream,
-          // since we are providing initial data (false)
-          // no need to check for initial connectionState
-          //
-          // additionally, SignInBloC does not add any errors to the stream
-          // no need to check for them.
-          initialData: false,
-          builder: (context, snapshot) {
-            // [233]
-            // extract loadingState from snapshot
-            // add new bool paremeter to _buildContent
-            return _buildContent(
-              context,
-              snapshot.data,
-            );
-          }),
+      // * [257] - removing StreamBuilder, replacing with ValueNotifier
+      // * [257] - using isLoading
+      body: _buildContent(context),
       backgroundColor: Colors.grey[100],
     );
   }
