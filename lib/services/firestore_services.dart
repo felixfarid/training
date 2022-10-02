@@ -17,7 +17,7 @@ class FirestoreService {
   // helper method that is Generic on type T
   Stream<List<T>> collectionStream<T>({
     required String path,
-    required T Function(Map<String, dynamic> data) builder,
+    required T Function(Map<String, dynamic> data, String documentId) builder,
   }) {
     // * Copying from jobStream
     final reference = FirebaseFirestore.instance.collection(path);
@@ -26,14 +26,25 @@ class FirestoreService {
     final snapshots = reference.snapshots();
     // here we want to convert collection snapshot into a list of jobs
     return snapshots.map(
-      (snapshot) =>
-          snapshot.docs.map((document) => builder(document.data())).toList(),
+      (snapshot) => snapshot.docs
+          .map(
+            (document) => builder(document.data(), document.id),
+          )
+          .toList(),
     );
   }
 
-  Future<void> setData({String? path, Map<String, dynamic>? data}) async {
-    final reference = FirebaseFirestore.instance.doc(path!);
+  Future<void> setData(
+      {required String path, required Map<String, dynamic> data}) async {
+    final reference = FirebaseFirestore.instance.doc(path);
     print('$path: $data');
-    await reference.set(data!);
+    await reference.set(data);
+  }
+
+  // [318]
+  Future<void> deleteData({required String path}) async {
+    final reference = FirebaseFirestore.instance.doc(path);
+    print('delete: $path');
+    await reference.delete();
   }
 }

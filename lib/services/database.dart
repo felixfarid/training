@@ -13,10 +13,10 @@ abstract class Database {
 
   // Create a new job / edit an existing job
   // Future<void> setJob(Job job);
-  Future<void> createJob(Job job);
+  Future<void> setJob(Job job);
 
   // Delete and existing job
-  //// Future<void> deleteJob(Job job);
+  Future<void> deleteJob(Job job);
 
   // Create a new entry / edit an existing entry
   //// Future<void> setEntry(Entry entry);
@@ -33,6 +33,9 @@ abstract class Database {
   //// Stream<List<Entry>> entriesStream({Job job});
 }
 
+// [302] - DateTime to use as unique Job ID
+String documentIdFromCurrentDate() => DateTime.now().toIso8601String();
+
 class FirestoreDatabase implements Database {
   // ignore: unnecessary_null_comparison
   FirestoreDatabase({required this.uid}) : assert(uid != null);
@@ -44,14 +47,19 @@ class FirestoreDatabase implements Database {
   final _service = FirestoreService.instance;
 
   @override
-  Future<void> createJob(Job job) => _service.setData(
-        path: APIPath.job(uid, 'job_abc'),
+  Future<void> setJob(Job job) => _service.setData(
+        path: APIPath.job(uid, job.id),
         data: job.toMap(),
       );
 
   @override
   Stream<List<Job>> jobsStream() => _service.collectionStream(
         path: APIPath.jobs(uid),
-        builder: (data) => Job.fromMap(data),
+        builder: (data, documentId) => Job.fromMap(data, documentId),
       );
+
+  // [318]
+  @override
+  Future<void> deleteJob(Job job) =>
+      _service.deleteData(path: APIPath.job(uid, job.id));
 }

@@ -1,12 +1,16 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:time_tracker/app/home/jobs/edit_job_page.dart';
+import 'package:time_tracker/app/home/jobs/empty_content.dart';
+import 'package:time_tracker/app/home/jobs/job_list_tile.dart';
+import 'package:time_tracker/app/home/jobs/list_items_builder.dart';
 import 'package:time_tracker/app/home/models/job.dart';
 import 'package:time_tracker/common_widgets/show_alert_dialog.dart';
 import 'package:time_tracker/common_widgets/show_exception_alert_dialog.dart';
 
-import '../../services/auth.dart';
-import '../../services/database.dart';
+import '../../../services/auth.dart';
+import '../../../services/database.dart';
 
 class JobsPage extends StatelessWidget {
   const JobsPage({
@@ -43,21 +47,38 @@ class JobsPage extends StatelessWidget {
   }
 
   //----------------------------------------------------------------------------
-  // Create Job - button method
+  // Create Job - button method -> depreceated. [298]
   //----------------------------------------------------------------------------
 
-  Future<void> _createJob(BuildContext context) async {
+  // Future<void> _createJob(BuildContext context) async {
+  //   try {
+  //     final database = Provider.of<Database>(context, listen: false);
+  //     await database.createJob(Job(
+  //       name: 'Blogging',
+  //       ratePerHour: 100,
+  //     ));
+  //   } on FirebaseException catch (e) {
+  //     // [285]
+  //     showExceptionAlertDialog(
+  //       context,
+  //       title: 'Operation failes',
+  //       exception: e,
+  //     );
+  //   }
+  // }
+
+  //----------------------------------------------------------------------------
+  // Delete method
+  //----------------------------------------------------------------------------
+
+  Future<void> _delete(BuildContext context, Job job) async {
     try {
       final database = Provider.of<Database>(context, listen: false);
-      await database.createJob(Job(
-        name: 'Blogging',
-        ratePerHour: 100,
-      ));
+      await database.deleteJob(job);
     } on FirebaseException catch (e) {
-      // [285]
       showExceptionAlertDialog(
         context,
-        title: 'Operation failes',
+        title: 'Operation failed',
         exception: e,
       );
     }
@@ -72,19 +93,22 @@ class JobsPage extends StatelessWidget {
     return StreamBuilder<List<Job>>(
       stream: database.jobsStream(),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final jobs = snapshot.data;
-          final children = jobs?.map((job) => Text(job.name)).toList();
-          return ListView(
-            children: children!,
-          );
-        }
-        if (snapshot.hasError) {
-          return const Center(
-            child: Text('Some error occured'),
-          );
-        }
-        return const Center(child: CircularProgressIndicator());
+        // [316]
+        return ListItemsBuilder<Job>(
+          snapshot: snapshot,
+          itemBuilder: (context, job) => Dismissible(
+            background: Container(
+              color: Colors.red,
+            ),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) => _delete(context, job),
+            key: Key('job-${job.id}'),
+            child: JobListTile(
+              job: job,
+              onTap: () => EditJobPage.show(context, job: job),
+            ),
+          ),
+        );
       },
     );
   }
@@ -114,7 +138,8 @@ class JobsPage extends StatelessWidget {
       ),
       body: _buildContents(context),
       floatingActionButton: ElevatedButton(
-        onPressed: () => _createJob(context),
+        // onPressed: () => _createJob(context),
+        onPressed: () => EditJobPage.show(context),
         child: const Icon(Icons.add),
       ),
     );
